@@ -864,16 +864,18 @@
       this.renderer = this.runtime.renderer;
       this.layerManager = this.renderer.layerManager;
       this.rootFolder = this.layerManager.rootFolder;
-      this.COMMENT_CONFIG_MAGIC = ' // _layerManagerConfig_';
+      this.COMMENT_CONFIG_MAGIC = " // _layerManagerConfig_";
 
       // 初始化，劫持函数、生成默认层级
       const intervalId = setInterval(() => {
         if (this.runtime.targets.length > 0) {
           clearInterval(intervalId);
           this.hackScratchFunctions();
-          this.__generateLayerLevelsFromList(DEFAULT_LAYERS_STRING.split(","), DEFAULT_LAYER);
+          this.__generateLayerLevelsFromList(
+            DEFAULT_LAYERS_STRING.split(","),
+            DEFAULT_LAYER
+          );
           this.parseExtOptions();
-          this.runtime.requestToolboxExtensionsUpdate();
         }
       }, 1000);
       // // 项目加载完成
@@ -1374,31 +1376,31 @@
     //     so that the layer hierarchy can be loaded automatically next time
     //     codes modified from tw runtime
 
-    findOrCreateOptionsComment (createIfNotExist = false) {
-      const id = '_layerManagerConfigComment_';
+    findOrCreateOptionsComment(createIfNotExist = false) {
+      const id = "_layerConfigComment_";
       const target = this.runtime.getTargetForStage();
       const comments = target.comments;
       for (const comment of Object.values(comments)) {
-          if (comment.text.includes(this.COMMENT_CONFIG_MAGIC)) {
-              return comment;
-          }
+        if (comment.text.includes(this.COMMENT_CONFIG_MAGIC)) {
+          return comment;
+        }
       }
       // find by id
       if (target.comments[id]) return target.comments[id];
       if (createIfNotExist) {
-        target.createComment(id, null, '-', 50, 150, 350, 170, false);
+        target.createComment(id, null, "-", 50, 150, 350, 170, false);
         return target.comments[id];
       }
       return null;
     }
-    generateExtOptions () {
+    generateExtOptions() {
       const options = {
         layers: this.__getLayerLevelNames(),
-        default: this.layerManager.defaultFolderDrawableAddTo.name
+        default: this.layerManager.defaultFolderDrawableAddTo.name,
       };
       return options;
     }
-    storeExtOptions () {
+    storeExtOptions() {
       const options = this.generateExtOptions();
       // TODO: translate
       const text = `Configuration for layer manager.(can be deleted to remove the stored settings)\n${JSON.stringify(options)}${this.COMMENT_CONFIG_MAGIC}`;
@@ -1406,25 +1408,33 @@
       existingComment.text = text;
       this.runtime.emitProjectChanged();
     }
-    parseExtOptions () {
+    parseExtOptions() {
       const comment = this.findOrCreateOptionsComment();
       if (!comment) return;
-      const lineWithMagic = comment.text.split('\n').find(i => i.endsWith(this.COMMENT_CONFIG_MAGIC));
+      const lineWithMagic = comment.text
+        .split("\n")
+        .find((i) => i.endsWith(this.COMMENT_CONFIG_MAGIC));
       if (!lineWithMagic) return;
-      const jsonText = lineWithMagic.substr(0, lineWithMagic.length - this.COMMENT_CONFIG_MAGIC.length);
+      const jsonText = lineWithMagic.substr(
+        0,
+        lineWithMagic.length - this.COMMENT_CONFIG_MAGIC.length
+      );
       let parsed;
       try {
-          parsed = JSON.parse(jsonText);
-          if (!parsed || typeof parsed !== 'object') {
-              throw new Error('Invalid object');
-          }
+        parsed = JSON.parse(jsonText);
+        if (!parsed || typeof parsed !== "object") {
+          throw new Error("Invalid object");
+        }
       } catch (e) {
-          console.warn('LayerManger config comment has invalid JSON', e);
-          return;
+        console.warn("LayerManger config comment has invalid JSON", e);
+        return;
       }
 
       if (Array.isArray(parsed.layers) && parsed.default) {
-          this.__generateLayerLevelsFromList(parsed.layers, Scratch.Cast.toString(parsed.default));
+        this.__generateLayerLevelsFromList(
+          parsed.layers,
+          Scratch.Cast.toString(parsed.default)
+        );
       }
     }
 
@@ -1466,9 +1476,9 @@
     }
     __getLayerLevelNames() {
       return this.rootFolder.items
-      .filter((item) => typeof item === "object")
-      .map((item) => item.name)
-      .reverse();
+        .filter((item) => typeof item === "object")
+        .map((item) => item.name)
+        .reverse();
     }
     __getLayerLevelsMenu() {
       // 读取层级名称
@@ -1669,7 +1679,7 @@
       items.forEach((item, idx) => {
         const p = pref2 + pref + (idx === items.length - 1 ? "└" : "├");
         if (item.isOriginal === undefined) {
-          print(`${p} ${item.name}`); // ${zIndex(item.layerIndex)}
+          print(`${p}📁 ${item.name}`); // ${zIndex(item.layerIndex)}
           this.__printFolderInGandiTerminal(
             item,
             false,
@@ -1681,9 +1691,7 @@
           const { name } = item.sprite;
           // const name =this.getFolderAndSpriteName(item.sprite.name).spriteName;
           const idx = this.renderer.getDrawableLayerIndex(item.drawableID);
-          print(
-            `${p}${zIndex(idx)}${name}${item.isOriginal ? "" : "(clone)"}`
-          );
+          print(`${p}${zIndex(idx)}${name}${item.isOriginal ? "" : "(clone)"}`);
         }
       });
       return output;
