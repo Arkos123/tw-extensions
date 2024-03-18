@@ -804,23 +804,6 @@
       }
       return draw.call(this);
     };
-
-    // NOTE: Modified by FurryR
-    for (const target of vm.runtime.targets) {
-      if (typeof target.drawableID === "number" && !target.isStage) {
-        const drawable = vm.renderer._allDrawables[target.drawableID];
-        // // gandi: use for layer management
-        drawable._layerIndex = 0;
-        // /**
-        //  * 所属图层文件夹
-        //  * @type {LayerFolder}
-        //  */
-        drawable._layerFolder = null;
-        vm.renderer.layerManager.defaultFolderDrawableAddTo.add(
-          target.drawableID
-        );
-      }
-    }
     const _dispose = vm.renderer.exports.Drawable.prototype.dispose;
     vm.renderer.exports.Drawable.prototype.dispose = function () {
       _dispose.call(this);
@@ -871,6 +854,19 @@
         if (this.runtime.targets.length > 0) {
           clearInterval(intervalId);
           this.hackScratchFunctions();
+          // NOTE: Modified by FurryR & Arkos
+          for (const target of vm.runtime.targets) {
+            if (typeof target.drawableID === "number" && !target.isStage) {
+              const drawable = vm.renderer._allDrawables[target.drawableID];
+              if (typeof drawable._layerIndex === "undefined") {
+                drawable._layerIndex = 0;
+              }
+              if (!drawable._layerFolder) {
+                drawable._layerFolder = null;
+                vm.renderer.layerManager.defaultFolderDrawableAddTo.add(target.drawableID);
+              }
+            }
+          }
           this.__generateLayerLevelsFromList(
             DEFAULT_LAYERS_STRING.split(","),
             DEFAULT_LAYER
